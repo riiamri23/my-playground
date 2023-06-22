@@ -1,19 +1,38 @@
 import './App.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Todo from './components/Todo';
+import { db, collectionVar } from './utils/firebase';
+import { collection, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 
 function App() {
-  const [todos, setTodos] = useState([
-    'doing somthing productive',
-    'let\'s do something',
-  ]);
+  const [todos, setTodos] = useState([]);
   const [input, setInput] = useState('');
+
+  // get data
+    useEffect(() => {
+      onSnapshot(collection(db, collectionVar), (snapshot) => {
+          const tempArr = [];
+          snapshot.docs.map(doc=>tempArr.push({id: doc.id, ...doc.data()}));
+          // console.log(tempArr);
+          setTodos(tempArr);
+
+
+          // setTodos(snapshot.docs.map(doc => doc.data()))
+      })
+  }, [input]);
+  
 
   const addTodo = (e)=>{
     e.preventDefault();
-    setTodos([...todos, input]);
-    setInput('');
+    // setTodos([...todos, input]);
+    // setInput('');
+    addDoc(collection(db, collectionVar), {
+      value: input,
+      date: serverTimestamp(),
+    });
+    setInput("");
   }
+  
 
   return (
     <div className="container mx-auto rounded-xl shadow border p-8 m-10">
